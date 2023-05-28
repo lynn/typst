@@ -25,6 +25,10 @@ use crate::prelude::*;
 /// Category: construct
 /// Returns: integer
 #[func]
+#[scope(
+    scope.define("unicode", int_unicode);
+    scope
+)]
 pub fn int(
     /// The value that should be converted to an integer.
     value: ToInt,
@@ -41,6 +45,27 @@ cast_from_value! {
     v: i64 => Self(v),
     v: f64 => Self(v as i64),
     v: EcoString => Self(v.parse().map_err(|_| eco_format!("invalid integer: {}", v))?),
+}
+
+/// Convert a single-character string to its Unicode ordinal / codepoint value.
+///
+/// ## Example
+/// ```example
+/// #int.unicode("a") // 97
+/// #int.unicode("♫") // 9835
+/// #int.unicode("🎸") // 127928
+/// ```
+///
+/// Display: Integer from Unicode
+/// Category: construct
+/// Returns: integer
+#[func]
+pub fn int_unicode(string: EcoString) -> Value {
+    let mut chars = string.chars();
+    match (chars.next(), chars.next()) {
+        (Some(c), None) => Value::Int(c as i64),
+        _ => bail!(args.span, "expected a single-char string"),
+    }
 }
 
 /// Convert a value to a float.
@@ -472,6 +497,10 @@ cast_from_value! {
 /// Category: construct
 /// Returns: string
 #[func]
+#[scope(
+    scope.define("unicode", str_unicode);
+    scope
+)]
 pub fn str(
     /// The value that should be converted to a string.
     value: ToStr,
@@ -488,6 +517,26 @@ cast_from_value! {
     v: f64 => Self(format_str!("{}", v)),
     v: Label => Self(v.0.into()),
     v: Str => Self(v),
+}
+
+/// Convert a Unicode ordinal / codepoint value to a single-character string.
+///
+/// ## Example
+/// ```example
+/// #str.unicode(97) // "a"
+/// #str.unicode(9835) // "♫"
+/// #str.unicode(127928) // "🎸"
+/// ```
+///
+/// Display: String from Unicode
+/// Category: construct
+/// Returns: string
+#[func]
+pub fn str_unicode(codepoint: u32) -> Value {
+    match char::try_from(codepoint) {
+        Ok(c) => c.to_string().into(),
+        Err(_) => bail!(args.span, "invalid codepoint value"),
+    }
 }
 
 /// Create a label from a string.

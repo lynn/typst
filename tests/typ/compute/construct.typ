@@ -62,6 +62,31 @@
 #symbol()
 
 ---
+// Test Unicode codepoint conversion.
+#test(int.unicode("a"), 97)
+#test(int.unicode("♫"), 9835)
+#test(int.unicode("🎸"), 127928)
+#test(str.unicode(97), "a")
+#test(str.unicode(9835), "♫")
+#test(str.unicode(127928), "🎸")
+
+---
+// Error: 13-20 expected a single-char string
+#int.unicode("abc")
+
+---
+// Error: 13-17 expected a single-char string
+#int.unicode("")
+
+---
+// Error: 14-16 number must be at least zero
+#str.unicode(-1)
+
+---
+// Error: 13-22 invalid codepoint value
+#str.unicode(9999999)
+
+---
 // Test conversion to string.
 #test(str(123), "123")
 #test(str(50.14), "50.14")
